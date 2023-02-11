@@ -1,0 +1,14 @@
+{
+  "ref_name": [{
+    "status": "COMPLETED",
+    "output": {}
+  }],
+  "ref_name2": [{
+    "status": "COMPLETED",
+    "output": {}
+  }],
+  "ref_name3": [{
+    "status": "FAILED",
+    "output": {}
+  }]
+}

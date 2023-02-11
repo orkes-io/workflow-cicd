@@ -1,0 +1,36 @@
+plugins {
+	id 'java'
+}
+
+group = 'io.orkes.conductor.cicd'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+	maven {
+		url "https://s01.oss.sonatype.org/content/repositories/releases/"
+	}
+}
+
+ext {
+	//set('testcontainersVersion', "1.17.6")
+}
+
+dependencies {
+
+	implementation "io.orkes.conductor:orkes-conductor-client:1.1.12"
+	implementation "org.testcontainers:testcontainers:1.17.2"
+	implementation 'ch.qos.logback:logback-classic:1.4.5'
+	implementation "org.awaitility:awaitility:3.1.6"
+
+	implementation "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.11.4!!"
+	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.4!!"
+
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
