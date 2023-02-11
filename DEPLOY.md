@@ -1,4 +1,4 @@
-# Conductor Workflow Testing CI/CD
+# Conductor Workflows CI/CD
 
 Workflow and Task metadata are deployed to the Conductor server via `api/metadata` endpoints. 
 
