@@ -1,5 +1,12 @@
+buildscript {
+	dependencies {
+		classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.+'
+	}
+}
+
 plugins {
 	id 'java'
+	id "com.diffplug.spotless" version "5.0.0"
 }
 
 group = 'io.orkes.conductor.cicd'
@@ -30,6 +37,15 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
+
+spotless {
+	java {
+		removeUnusedImports()
+		importOrder('java', 'javax', 'org', 'com.netflix', 'io.orkes','', '\\#com.netflix', '\\#')
+		licenseHeaderFile("$rootDir/licenseheader.txt")
+	}
+}
+build.dependsOn(spotlessApply)
 
 tasks.named('test') {
 	useJUnitPlatform()
