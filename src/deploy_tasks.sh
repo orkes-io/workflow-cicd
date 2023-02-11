@@ -1,4 +1,6 @@
 #!/bin/bash
+[ "$(ls -A main/resources/tasks/)" ] && echo "Deploying Task Metadata" || exit 0
+
 echo "Deploying metadata to $CONDUCTOR_SERVER_URL using $KEY and SECRET (****)"
 echo "Generating the auth header using KEY and SECRET"
 
@@ -16,7 +18,7 @@ fi
 
 export token=`echo $response | cut -d '"' -f4`
 
-for FILE in main/resources/workflows/*;
+for FILE in main/resources/tasks/*;
   do
     echo "Deploying @$FILE";
 
