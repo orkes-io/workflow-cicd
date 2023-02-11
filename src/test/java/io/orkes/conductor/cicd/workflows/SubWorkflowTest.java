@@ -12,13 +12,15 @@
  */
 package io.orkes.conductor.cicd.workflows;
 
-import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.run.Workflow;
-import io.orkes.conductor.client.model.WorkflowTestRequest;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.run.Workflow;
+
+import io.orkes.conductor.client.model.WorkflowTestRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
