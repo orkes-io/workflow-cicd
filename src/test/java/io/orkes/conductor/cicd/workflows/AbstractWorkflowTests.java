@@ -12,6 +12,28 @@
  */
 package io.orkes.conductor.cicd.workflows;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.conductor.common.config.ObjectMapperProvider;
+import com.netflix.conductor.common.metadata.tasks.TaskResult;
+import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.sdk.healthcheck.HealthCheckClient;
+import io.orkes.conductor.client.ApiClient;
+import io.orkes.conductor.client.MetadataClient;
+import io.orkes.conductor.client.OrkesClients;
+import io.orkes.conductor.client.WorkflowClient;
+import io.orkes.conductor.client.model.WorkflowTestRequest;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,47 +41,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.utility.DockerImageName;
-
-import com.netflix.conductor.common.config.ObjectMapperProvider;
-import com.netflix.conductor.common.metadata.tasks.Task;
-import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.healthcheck.HealthCheckClient;
-
-import io.orkes.conductor.client.ApiClient;
-import io.orkes.conductor.client.MetadataClient;
-import io.orkes.conductor.client.OrkesClients;
-import io.orkes.conductor.client.WorkflowClient;
-import io.orkes.conductor.client.model.WorkflowTestRequest;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WorkflowTests {
+public abstract class AbstractWorkflowTests {
 
     public GenericContainer conductorServer;
 
     private static int port;
 
     protected static ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
+
+    protected static TypeReference<Map<String, List<WorkflowTestRequest.TaskMock>>> mockType = new TypeReference<Map<String, List<WorkflowTestRequest.TaskMock>>>() {
+    };
 
     protected MetadataClient metadataClient;
 
@@ -87,7 +84,7 @@ public class WorkflowTests {
         workflowClient = clients.getWorkflowClient();
 
         //Wait for up to a minute(!) for the healthcheck to complete
-        await().atMost(1, TimeUnit.MINUTES).until(()-> healthCheckClient.isServerRunning());
+        await().atMost(1, TimeUnit.MINUTES).until(() -> healthCheckClient.isServerRunning());
     }
 
     @AfterAll
@@ -95,74 +92,8 @@ public class WorkflowTests {
         conductorServer.stop();
     }
 
-
-    @Test
-    //Uses a previously executed successful run to verify the worklfow execution and it's output.
-    public void verifyWorkflowOutput() throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        //Workflow Definition
-        WorkflowDef def = getWorkflowDef("/workflows/workflow1.json");
-
-        //Golden output to verify against
-        Workflow workflow = getWorkflow("/test_data/workflow1_run.json");
-
-        WorkflowTestRequest testRequest = new WorkflowTestRequest();
-        testRequest.setInput(new HashMap<>());
-        testRequest.setName(def.getName());
-        testRequest.setVersion(def.getVersion());
-        testRequest.setWorkflowDef(def);
-
-        Map<String, List<WorkflowTestRequest.TaskMock>> taskRefToMockOutput = new HashMap<>();
-        for (Task task : workflow.getTasks()) {
-            List<WorkflowTestRequest.TaskMock> taskRuns = new ArrayList<>();
-            WorkflowTestRequest.TaskMock mock = new WorkflowTestRequest.TaskMock();
-            mock.setStatus(TaskResult.Status.valueOf(task.getStatus().name()));
-            mock.setOutput(task.getOutputData());
-            taskRuns.add(mock);
-            taskRefToMockOutput.put(def.getTasks().get(0).getTaskReferenceName(), taskRuns);
-        }
-
-        testRequest.setTaskRefToMockOutput(taskRefToMockOutput);
-        Workflow execution = workflowClient.testWorkflow(testRequest);
-        assertNotNull(execution);
-        assertEquals(workflow.getTasks().size(), execution.getTasks().size());
-    }
-
-    @Test
-    public void verifyWorkflowExecution() throws IOException {
-        WorkflowDef def = getWorkflowDef("/workflows/kitchensink.json");
-        WorkflowDef subWorkflowDef = getWorkflowDef("/workflows/PopulationMinMax.json");
-        metadataClient.registerWorkflowDef(subWorkflowDef);
-        assertNotNull(def);
-
-        WorkflowTestRequest testRequest = getWorkflowTestRequest(def);
-
-        //The following are the dynamic tasks which are not present in the workflow definition but are created by dynamic fork
-        testRequest.getTaskRefToMockOutput().put("_x_test_worker_0_0", List.of(new WorkflowTestRequest.TaskMock()));
-        testRequest.getTaskRefToMockOutput().put("_x_test_worker_0_1", List.of(new WorkflowTestRequest.TaskMock()));
-        testRequest.getTaskRefToMockOutput().put("_x_test_worker_0_2", List.of(new WorkflowTestRequest.TaskMock()));
-        testRequest.getTaskRefToMockOutput().put("simple_task_1__1", List.of(new WorkflowTestRequest.TaskMock()));
-        testRequest.getTaskRefToMockOutput().put("simple_task_5", List.of(new WorkflowTestRequest.TaskMock()));
-
-
-        Workflow execution = workflowClient.testWorkflow(testRequest);
-        assertNotNull(execution);
-
-        //Verfiy that the workflow COMPLETES
-        assertEquals(Workflow.WorkflowStatus.COMPLETED, execution.getStatus());
-
-        //That the workflow executes a wait task
-        assertTrue(execution.getTasks().stream().anyMatch(t -> t.getReferenceTaskName().equals("wait")));
-
-        //That the call_made variable was set to True
-        assertEquals(true, execution.getVariables().get("call_made"));
-
-        //Total number of tasks executed are 17
-        assertEquals(17, execution.getTasks().size());
-
-    }
-
     @NotNull
-    private WorkflowTestRequest getWorkflowTestRequest(WorkflowDef def) throws IOException {
+    protected WorkflowTestRequest getWorkflowTestRequest(WorkflowDef def) throws IOException {
         WorkflowTestRequest testRequest = new WorkflowTestRequest();
         testRequest.setInput(new HashMap<>());
         testRequest.setName(def.getName());
@@ -181,9 +112,9 @@ public class WorkflowTests {
             taskRuns.add(mock);
             taskRefToMockOutput.put(task.getTaskReferenceName(), taskRuns);
 
-            if(task.getType().equals(TaskType.SUB_WORKFLOW.name())) {
+            if (task.getType().equals(TaskType.SUB_WORKFLOW.name())) {
                 Object inlineSubWorkflowDefObj = task.getSubWorkflowParam().getWorkflowDefinition();
-                if(inlineSubWorkflowDefObj != null) {
+                if (inlineSubWorkflowDefObj != null) {
                     //If not null, it represents WorkflowDef object
                     WorkflowDef inlineSubWorkflowDef = (WorkflowDef) inlineSubWorkflowDefObj;
                     WorkflowTestRequest subWorkflowTestRequest = getWorkflowTestRequest(inlineSubWorkflowDef);
@@ -205,8 +136,8 @@ public class WorkflowTests {
 
 
     protected WorkflowDef getWorkflowDef(String path) throws IOException {
-        InputStream inputStream = WorkflowTests.class.getResourceAsStream(path);
-        if(inputStream == null) {
+        InputStream inputStream = AbstractWorkflowTests.class.getResourceAsStream(path);
+        if (inputStream == null) {
             throw new IOException("No file found at " + path);
         }
         return objectMapper.readValue(new InputStreamReader(inputStream), WorkflowDef.class);
@@ -214,11 +145,20 @@ public class WorkflowTests {
     }
 
     protected Workflow getWorkflow(String path) throws IOException {
-        InputStream inputStream = WorkflowTests.class.getResourceAsStream(path);
-        if(inputStream == null) {
+        InputStream inputStream = AbstractWorkflowTests.class.getResourceAsStream(path);
+        if (inputStream == null) {
             throw new IOException("No file found at " + path);
         }
         return objectMapper.readValue(new InputStreamReader(inputStream), Workflow.class);
+
+    }
+
+    protected Map<String, List<WorkflowTestRequest.TaskMock>> getTestInputs(String path) throws IOException {
+        InputStream inputStream = AbstractWorkflowTests.class.getResourceAsStream(path);
+        if (inputStream == null) {
+            throw new IOException("No file found at " + path);
+        }
+        return objectMapper.readValue(new InputStreamReader(inputStream), mockType);
 
     }
 
