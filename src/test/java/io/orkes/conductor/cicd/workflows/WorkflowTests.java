@@ -103,7 +103,7 @@ public class WorkflowTests {
         WorkflowDef def = getWorkflowDef("/workflows/workflow1.json");
 
         //Golden output to verify against
-        Workflow workflow = getWorkflow("/workflows/workflow1_run.json");
+        Workflow workflow = getWorkflow("/test_data/workflow1_run.json");
 
         WorkflowTestRequest testRequest = new WorkflowTestRequest();
         testRequest.setInput(new HashMap<>());
