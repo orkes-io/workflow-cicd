@@ -21,7 +21,7 @@ The actual workflow is executed on a real Conductor server ensuring you are test
 
 ### Setting up Conductor server for testing
 Tests can be run against a remote server (useful when running integration tests) or local containerized instance.  Recommended approach is to use `testcontainers`.
-See [WorkflowTests.java](src/test/java/io/orkes/conductor/cicd/workflows/WorkflowTests.java) for a fully working example of how to run tests locally. 
+See [WorkflowTests.java](src/test/java/io/orkes/conductor/cicd/workflows/WorkflowTests.java#L131) for a fully working example of how to run tests locally. 
 
 
 
