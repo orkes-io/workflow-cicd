@@ -4,6 +4,7 @@
 echo "Deploying metadata to $CONDUCTOR_SERVER_URL using $KEY and SECRET (****)"
 echo "Generating the auth header using KEY and SECRET"
 
+# docs-marker-start-1
 export response=`curl -s -X POST $CONDUCTOR_SERVER_URL/token -H 'Content-Type:application/json' -d '{
 	"keyId": "'"$KEY"'",
 	"keySecret": "'"$SECRET"'"
@@ -29,7 +30,7 @@ for FILE in main/resources/workflows/*;
          -d @$FILE
   done
 
-
+# docs-marker-end-1
 
 
 
