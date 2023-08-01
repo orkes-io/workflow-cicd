@@ -66,12 +66,15 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertEquals(workflowInput.getLoanAmount().toString(), String.valueOf(execution.getInput().get("loanAmount")));
         assertEquals(workflowInput.getUserEmail(), execution.getInput().get("userEmail"));
 
-        //A total of 3 tasks were executed
-        assertEquals(3, execution.getTasks().size());
+        //A total of 7 tasks were executed
+        assertEquals(7, execution.getTasks().size());
 
         Task fetchUserDetails = execution.getTasks().get(0);
         Task getCreditScore = execution.getTasks().get(1);
         Task calculateLoanAmount = execution.getTasks().get(2);
+        Task phoneNumberValidAttempt1 = execution.getTasks().get(4);
+        Task phoneNumberValidAttempt2 = execution.getTasks().get(5);
+        Task phoneNumberValidAttempt3 = execution.getTasks().get(6);
 
         //fetch user details received the correct input from the workflow
         assertEquals(workflowInput.getUserEmail(), fetchUserDetails.getInputData().get("userEmail"));
@@ -96,10 +99,16 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         long authorizedLoanAmount = 10_000;
         assertEquals(authorizedLoanAmount, calculateLoanAmount.getOutputData().get("authorizedLoanAmount"));
 
+        assertEquals(false, phoneNumberValidAttempt1.getOutputData().get("valid"));
+        assertEquals(false, phoneNumberValidAttempt2.getOutputData().get("valid"));
+        assertEquals(true, phoneNumberValidAttempt3.getOutputData().get("valid"));
+
         //Finally, lets verify the workflow outputs
         assertEquals(userAccountNo, execution.getOutput().get("accountNumber"));
         assertEquals(expectedCreditRating, execution.getOutput().get("creditRating"));
         assertEquals(authorizedLoanAmount, execution.getOutput().get("authorizedLoanAmount"));
+        // Workflow output takes the latest iteration output of a loopOver task.
+        assertEquals(true, execution.getOutput().get("phoneNumberValid"));
 
         System.out.println(execution);
     }

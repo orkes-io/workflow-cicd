@@ -16,5 +16,26 @@
     "output": {
       "authorizedLoanAmount": 10000
     }
+  }],
+  "check_phone_number_valid__1": [{
+    "status": "COMPLETED",
+    "output": {
+      "valid": false,
+      "reason" : "server not reachable"
+    }
+  }],
+  "check_phone_number_valid__2": [{
+    "status": "COMPLETED",
+    "output": {
+      "valid": false,
+      "reason": "rate limited"
+    }
+  }],
+  "check_phone_number_valid__3": [{
+    "status": "COMPLETED",
+    "output": {
+      "valid": true,
+      "reason" : "success"
+    }
   }]
 }
