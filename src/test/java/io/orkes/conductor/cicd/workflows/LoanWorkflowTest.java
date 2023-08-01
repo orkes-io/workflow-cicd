@@ -42,6 +42,12 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertNotNull(def);
         Map<String, List<WorkflowTestRequest.TaskMock>> testInputs = getTestInputs("/test_data/loan_workflow_input.json");
         assertNotNull(testInputs);
+        WorkflowTestRequest.TaskMock taskMock = new WorkflowTestRequest.TaskMock();
+        taskMock.getOutput().put("valid", false);
+        testInputs.put("check_phone_number_valid__1", List.of(taskMock));
+        testInputs.put("check_phone_number_valid__2", List.of(taskMock));
+        taskMock.getOutput().put("valid", true);
+        testInputs.put("check_phone_number_valid__3", List.of(taskMock));
 
         WorkflowTestRequest testRequest = new WorkflowTestRequest();
         testRequest.setWorkflowDef(def);
@@ -66,8 +72,8 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertEquals(workflowInput.getLoanAmount().toString(), String.valueOf(execution.getInput().get("loanAmount")));
         assertEquals(workflowInput.getUserEmail(), execution.getInput().get("userEmail"));
 
-        //A total of 3 tasks were executed
-        assertEquals(3, execution.getTasks().size());
+        //A total of 7 tasks were executed
+        assertEquals(7, execution.getTasks().size());
 
         Task fetchUserDetails = execution.getTasks().get(0);
         Task getCreditScore = execution.getTasks().get(1);
@@ -100,6 +106,7 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertEquals(userAccountNo, execution.getOutput().get("accountNumber"));
         assertEquals(expectedCreditRating, execution.getOutput().get("creditRating"));
         assertEquals(authorizedLoanAmount, execution.getOutput().get("authorizedLoanAmount"));
+        assertEquals(true, execution.getOutput().get("phoneNumberValid"));
 
         System.out.println(execution);
     }
