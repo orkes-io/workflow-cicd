@@ -42,18 +42,6 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertNotNull(def);
         Map<String, List<WorkflowTestRequest.TaskMock>> testInputs = getTestInputs("/test_data/loan_workflow_input.json");
         assertNotNull(testInputs);
-        WorkflowTestRequest.TaskMock taskMock1 = new WorkflowTestRequest.TaskMock();
-        taskMock1.getOutput().put("valid", false);
-        taskMock1.getOutput().put("reason", "server not reachable");
-        testInputs.put("check_phone_number_valid__1", List.of(taskMock1));
-        WorkflowTestRequest.TaskMock taskMock2 = new WorkflowTestRequest.TaskMock();
-        taskMock2.getOutput().put("valid", false);
-        taskMock2.getOutput().put("reason", "rate limited");
-        testInputs.put("check_phone_number_valid__2", List.of(taskMock2));
-        WorkflowTestRequest.TaskMock taskMock3 = new WorkflowTestRequest.TaskMock();
-        taskMock3.getOutput().put("reason", "success");
-        taskMock3.getOutput().put("valid", true);
-        testInputs.put("check_phone_number_valid__3", List.of(taskMock3));
 
         WorkflowTestRequest testRequest = new WorkflowTestRequest();
         testRequest.setWorkflowDef(def);
@@ -84,6 +72,9 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         Task fetchUserDetails = execution.getTasks().get(0);
         Task getCreditScore = execution.getTasks().get(1);
         Task calculateLoanAmount = execution.getTasks().get(2);
+        Task phoneNumberValidAttempt1 = execution.getTasks().get(4);
+        Task phoneNumberValidAttempt2 = execution.getTasks().get(5);
+        Task phoneNumberValidAttempt3 = execution.getTasks().get(6);
 
         //fetch user details received the correct input from the workflow
         assertEquals(workflowInput.getUserEmail(), fetchUserDetails.getInputData().get("userEmail"));
@@ -107,6 +98,10 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
 
         long authorizedLoanAmount = 10_000;
         assertEquals(authorizedLoanAmount, calculateLoanAmount.getOutputData().get("authorizedLoanAmount"));
+
+        assertEquals(false, phoneNumberValidAttempt1.getOutputData().get("valid"));
+        assertEquals(false, phoneNumberValidAttempt2.getOutputData().get("valid"));
+        assertEquals(true, phoneNumberValidAttempt3.getOutputData().get("valid"));
 
         //Finally, lets verify the workflow outputs
         assertEquals(userAccountNo, execution.getOutput().get("accountNumber"));
