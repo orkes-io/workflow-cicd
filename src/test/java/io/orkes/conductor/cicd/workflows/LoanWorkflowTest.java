@@ -42,12 +42,18 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertNotNull(def);
         Map<String, List<WorkflowTestRequest.TaskMock>> testInputs = getTestInputs("/test_data/loan_workflow_input.json");
         assertNotNull(testInputs);
-        WorkflowTestRequest.TaskMock taskMock = new WorkflowTestRequest.TaskMock();
-        taskMock.getOutput().put("valid", false);
-        testInputs.put("check_phone_number_valid__1", List.of(taskMock));
-        testInputs.put("check_phone_number_valid__2", List.of(taskMock));
-        taskMock.getOutput().put("valid", true);
-        testInputs.put("check_phone_number_valid__3", List.of(taskMock));
+        WorkflowTestRequest.TaskMock taskMock1 = new WorkflowTestRequest.TaskMock();
+        taskMock1.getOutput().put("valid", false);
+        taskMock1.getOutput().put("reason", "server not reachable");
+        testInputs.put("check_phone_number_valid__1", List.of(taskMock1));
+        WorkflowTestRequest.TaskMock taskMock2 = new WorkflowTestRequest.TaskMock();
+        taskMock2.getOutput().put("valid", false);
+        taskMock2.getOutput().put("reason", "rate limited");
+        testInputs.put("check_phone_number_valid__2", List.of(taskMock2));
+        WorkflowTestRequest.TaskMock taskMock3 = new WorkflowTestRequest.TaskMock();
+        taskMock3.getOutput().put("reason", "success");
+        taskMock3.getOutput().put("valid", true);
+        testInputs.put("check_phone_number_valid__3", List.of(taskMock3));
 
         WorkflowTestRequest testRequest = new WorkflowTestRequest();
         testRequest.setWorkflowDef(def);
@@ -106,6 +112,7 @@ public class LoanWorkflowTest extends AbstractWorkflowTests {
         assertEquals(userAccountNo, execution.getOutput().get("accountNumber"));
         assertEquals(expectedCreditRating, execution.getOutput().get("creditRating"));
         assertEquals(authorizedLoanAmount, execution.getOutput().get("authorizedLoanAmount"));
+        // Workflow output takes the latest iteration output of a loopOver task.
         assertEquals(true, execution.getOutput().get("phoneNumberValid"));
 
         System.out.println(execution);
