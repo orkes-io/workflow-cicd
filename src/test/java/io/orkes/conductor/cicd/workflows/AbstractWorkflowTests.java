@@ -52,10 +52,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractWorkflowTests {
 
-    public GenericContainer conductorServer;
-
-    private static int port;
-
     protected static ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     protected static TypeReference<Map<String, List<WorkflowTestRequest.TaskMock>>> mockType = new TypeReference<Map<String, List<WorkflowTestRequest.TaskMock>>>() {
@@ -68,31 +64,15 @@ public abstract class AbstractWorkflowTests {
     @BeforeAll
     public void setup() {
 
+        String serverURL = System.getenv("CONDUCTOR_SERVER_URL");
+        String authKey = System.getenv("CONDUCTOR_AUTH_KEY");
+        String authSecret = System.getenv("CONDUCTOR_AUTH_SECRET");
 
-        //Pull the container to your local docker repo before running
-        //e.g. docker pull orkesio/orkes-conductor-standalone:2.3.25
-        conductorServer = new GenericContainer(DockerImageName.parse("orkesio/orkes-conductor-standalone:2.3.25"))
-                .withExposedPorts(8080, 5000);
-
-        conductorServer.start();
-        port = conductorServer.getMappedPort(8080);
-        String baseURL = "http://localhost:" + port + "/";
-        conductorServer.waitingFor(new HttpWaitStrategy().forPath(baseURL + "health"));
-
-        ApiClient apiClient = new ApiClient("http://localhost:" + port + "/api");
+        ApiClient apiClient = new ApiClient(serverURL, authKey, authSecret);
 
         OrkesClients clients = new OrkesClients(apiClient);
-        HealthCheckClient healthCheckClient = new HealthCheckClient("http://localhost:" + port + "/health");
         metadataClient = clients.getMetadataClient();
         workflowClient = clients.getWorkflowClient();
-
-        //Wait for up to a minute(!) for the healthcheck to complete
-        await().atMost(1, TimeUnit.MINUTES).until(() -> healthCheckClient.isServerRunning());
-    }
-
-    @AfterAll
-    public void teardown() {
-        conductorServer.stop();
     }
 
     @NotNull

@@ -1,5 +1,5 @@
 {
-  "name": "test_workflow",
+  "name": "loan_calculate_workflow",
   "description": "Edit or extend this sample workflow. Set the workflow name to get started",
   "version": 1,
   "tasks": [

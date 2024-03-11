@@ -29,6 +29,12 @@ Tests can be run against a remote server (useful when running integration tests)
 * Testing workflows that contain sub-workflows : [SubWorkflowTest.java](src/test/java/io/orkes/conductor/cicd/workflows/SubWorkflowTest.java)
 
 #### Regression Test
-Workflows can be regression tested with golden inputs and outputs.  This approach is useful when modifying workflows that are running in production to ensure the behavior remains correct.
+Workflows can be regression tested with golden inputs and outputs.  
+This approach is useful when modifying workflows that are running in production to ensure the behavior remains correct.
 
 See [RegressionTest.java](src/test/java/io/orkes/conductor/cicd/workflows/RegressionTest.java) for an example, which uses previously captured workflow execution as golden input/output to verify the workflow execution.
+
+## Deploying workflows and tasks
+Use the provided [deploy_workflows.sh](src/deploy_workflows.sh) and [deploy_tasks.sh](src/deploy_tasks.sh) 
+
+These scripts that reads the workflows and tasks from [src/main/resources](src/main/resources) and deploys them to a target environment identified by `CONDUCTOR_SERVER_URL` environment variable.

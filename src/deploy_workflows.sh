@@ -6,8 +6,8 @@ echo "Generating the auth header using KEY and SECRET"
 
 # docs-marker-start-1
 export response=`curl -s -X POST $CONDUCTOR_SERVER_URL/token -H 'Content-Type:application/json' -d '{
-	"keyId": "'"$KEY"'",
-	"keySecret": "'"$SECRET"'"
+	"keyId": "'"$CONDUCTOR_AUTH_KEY"'",
+	"keySecret": "'"$CONDUCTOR_AUTH_SECRET"'"
 }'`
 
 if [[ "$response" != *'token'* ]]; then

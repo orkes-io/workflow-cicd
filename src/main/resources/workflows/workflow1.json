@@ -1,7 +1,7 @@
 {
   "createTime": 1674453020104,
   "updateTime": 1674453020105,
-  "name": "test_http",
+  "name": "test_http_cicd",
   "description": "v1",
   "version": 1,
   "tasks": [
