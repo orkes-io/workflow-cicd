@@ -3,7 +3,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Workflow CI/CD
+name: Build Test and Deploy
 on:
   workflow_dispatch:
 
