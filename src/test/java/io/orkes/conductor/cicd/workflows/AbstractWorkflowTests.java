@@ -64,9 +64,10 @@ public abstract class AbstractWorkflowTests {
     @BeforeAll
     public void setup() {
 
-        String serverURL = System.getenv("CONDUCTOR_SERVER_URL");
-        String authKey = System.getenv("CONDUCTOR_AUTH_KEY");
-        String authSecret = System.getenv("CONDUCTOR_AUTH_SECRET");
+        String env = System.getenv("ENV");
+        String serverURL = System.getenv("CONDUCTOR_SERVER_URL_" + env);
+        String authKey = System.getenv("CONDUCTOR_AUTH_KEY_" + env);
+        String authSecret = System.getenv("CONDUCTOR_AUTH_SECRET_" + env);
 
         ApiClient apiClient = new ApiClient(serverURL, authKey, authSecret);
 
