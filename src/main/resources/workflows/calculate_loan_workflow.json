@@ -1,6 +1,6 @@
 {
   "name": "loan_calculate_workflow",
-  "description": "Edit or extend this sample workflow. Set the workflow name to get started",
+  "description": "loan rate calcuator workflow v1",
   "version": 1,
   "tasks": [
     {
