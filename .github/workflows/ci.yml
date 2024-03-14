@@ -6,15 +6,15 @@
 name: Build Test and Deploy
 on:
   workflow_dispatch:
-inputs:
-  environment:
-    type: choice
-    description: Deployment Environment
-    options:
-      - dev
-      - prod
-    message:
-      required: true
+    inputs:
+      environment:
+        type: choice
+        description: Deployment Environment
+        options:
+          - dev
+          - prod
+        message:
+          required: true
 
 jobs:
   publish:
