@@ -11,8 +11,8 @@ on:
         type: choice
         description: Deployment Environment
         options:
-          - DEV
-          - PROD
+          - dev
+          - prod
         message:
           required: true
 
@@ -31,7 +31,7 @@ jobs:
           java-version: '11'
       - name: Build and Test
         run: |          
-          echo "hi"
+          ./gradlew clean build
       - name: Deploy
         run: |
           cd src          
@@ -40,7 +40,6 @@ jobs:
           echo "Deploying workflows"
           ./deploy_workflows.sh
     env:
-      CONDUCTOR_SERVER_URL_DEV: ${{ secrets.CONDUCTOR_SERVER_URL_DEV }}
-      CONDUCTOR_AUTH_KEY_DEV: ${{ secrets.CONDUCTOR_AUTH_KEY_DEV }}
-      CONDUCTOR_AUTH_SECRET_DEV: ${{ secrets.CONDUCTOR_AUTH_SECRET_DEV }}
-      ENV: ${{ github.event.inputs.environment }}
+      CONDUCTOR_SERVER_URL: ${{ secrets.CONDUCTOR_SERVER_URL }}
+      CONDUCTOR_AUTH_KEY: ${{ secrets.CONDUCTOR_AUTH_KEY }}
+      CONDUCTOR_AUTH_SECRET: ${{ secrets.CONDUCTOR_AUTH_SECRET }}
