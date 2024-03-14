@@ -13,6 +13,8 @@ if [[ "$response" != *'token'* ]]; then
   echo "Unable to generate the auth header.  Please check KEY, SECRET and CONDUCTOR_SERVER_URL variables"
   echo "Server response:"
   echo $response
+  echo "environment is $ENV"
+  echo "url is $CONDUCTOR_SERVER_URL_$ENV"
   exit 1
 fi
 
