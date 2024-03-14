@@ -19,7 +19,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: prod
+    environment: ${{ github.event.inputs.environment }}
     name: Build and Deploy workflows to the target environment
     steps:
       - name: Checkout repo
@@ -31,6 +31,7 @@ jobs:
           java-version: '11'
       - name: Build and Test
         run: |          
+          echo "server is $CONDUCTOR_SERVER_URL"
           ./gradlew clean build
       - name: Deploy
         run: |
